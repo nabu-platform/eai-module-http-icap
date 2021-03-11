@@ -6,10 +6,12 @@ import be.nabu.eai.repository.api.Repository;
 import be.nabu.eai.repository.api.VirusInfection;
 import be.nabu.eai.repository.api.VirusScanner;
 import be.nabu.eai.repository.artifacts.jaxb.JAXBArtifact;
+import be.nabu.libs.http.HTTPException;
 import be.nabu.libs.http.api.HTTPEntity;
 import be.nabu.libs.http.api.HTTPRequest;
 import be.nabu.libs.http.icap.ICAPUtils;
 import be.nabu.libs.resources.api.ResourceContainer;
+import be.nabu.libs.services.api.ServiceException;
 import be.nabu.utils.security.SSLContextType;
 
 public class ICAPVirusScanner extends JAXBArtifact<ICAPVirusScannerConfiguration> implements VirusScanner {
@@ -19,7 +21,7 @@ public class ICAPVirusScanner extends JAXBArtifact<ICAPVirusScannerConfiguration
 	}
 
 	@Override
-	public VirusInfection scan(HTTPEntity entity) {
+	public VirusInfection scan(HTTPEntity entity) throws ServiceException {
 		if (entity instanceof HTTPRequest) {
 			try {
 				final be.nabu.libs.http.icap.VirusInfection infection = ICAPUtils.scan(
@@ -37,15 +39,18 @@ public class ICAPVirusScanner extends JAXBArtifact<ICAPVirusScannerConfiguration
 					? null
 					: ICAPVirusInfection.from(infection);
 			}
+			catch (HTTPException e) {
+				throw new ServiceException("ICAP-" + e.getCode(), e.getMessage(), e);
+			}
 			catch (Exception e) {
-				throw new RuntimeException(e);
+				throw new ServiceException("ICAP-1", "Could not scan request", e);
 			}
 		}
 		return null;
 	}
 
 	@Override
-	public VirusInfection scan(InputStream input) {
+	public VirusInfection scan(InputStream input) throws ServiceException {
 		try {
 			final be.nabu.libs.http.icap.VirusInfection infection = ICAPUtils.scan(
 				input, 
@@ -62,8 +67,11 @@ public class ICAPVirusScanner extends JAXBArtifact<ICAPVirusScannerConfiguration
 				? null
 				: ICAPVirusInfection.from(infection);
 		}
+		catch (HTTPException e) {
+			throw new ServiceException("ICAP-" + e.getCode(), e.getMessage(), e);
+		}
 		catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new ServiceException("ICAP-2", "Could not scan stream", e);
 		}
 	}
 

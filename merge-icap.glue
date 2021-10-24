@@ -1,0 +1,45 @@
+result = xml.objectify(file.read("virus-scanner.xml"))
+
+tag("ICAP HTTP Client")
+
+result/host = parameter(
+	name: "host",
+	category: "Basic",
+	title: null,
+	description: "The remote host to use",
+	type: null,
+	encrypted: false,
+	optional: true,
+	raw: result/host)/current
+	
+result/path = parameter(
+	name: "path",
+	category: "Basic",
+	title: null,
+	description: "The remote path to use",
+	type: null,
+	encrypted: false,
+	optional: true,
+	raw: result/path)/current
+	
+result/secure = parameter(
+	name: "secure",
+	category: "Basic",
+	title: null,
+	description: "Whether to use HTTPs or plain HTTP",
+	type: "boolean",
+	encrypted: false,
+	optional: true,
+	raw: result/secure)/current
+	
+result/keystore = parameter(
+	name: "keystore",
+	category: "Security",
+	title: null,
+	description: "The keystore this client uses",
+	type: "artifact",
+	encrypted: false,
+	optional: true,
+	raw: result/keystore)/current
+
+file.write("virus-scanner.xml", xml.stringify(result))
